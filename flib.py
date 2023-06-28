@@ -200,10 +200,10 @@ def generate():
                 _, _, bw, bh = redDraw.textbbox((0,0), ed[8:10],font = font)
                 if(day==today.strftime("%Y-%m-%d")):
                     redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=0, width=1)
-                    redDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2), ed[8:10] , fill='white',font = font)
+                    redDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill='white',font = font)
                 else:
                     redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
-                    blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2), ed[8:10] , fill=0,font = font)
+                    blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill=0,font = font)
             blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
             blackDraw.text((leftmarginbox + hmargin, currenty + margin), event.get('summary')+" "+getEventStartEndFormatted(event), fill=0,font = font)
             
