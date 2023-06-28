@@ -14,7 +14,7 @@ def main():
     (black,red) = eframe.generate()
     epd.init()
     epd.Clear()
-    epd.display(epd.getbuffer(black), epd.getbuffer(black))
+    epd.display(epd.getbuffer(black), epd.getbuffer(red))
 
 if __name__ == '__main__':
     main()
