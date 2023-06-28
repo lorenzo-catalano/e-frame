@@ -15,8 +15,6 @@ def main():
     epd.init()
     epd.Clear()
     epd.display(epd.getbuffer(black), epd.getbuffer(black))
-    except HttpError as error:
-        print('An error occurred: %s' % error)
 
 if __name__ == '__main__':
     main()
