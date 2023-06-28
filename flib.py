@@ -112,6 +112,7 @@ def drawPreview(blackDraw,redDraw,currenty,margin):
         if(currentmonth != startDay.month):
             for i in range(0,cell_width//3):
                 blackDraw.line((x+1, y+i*3,x+cell_width-1, y+i*3), fill='white', width=1)
+                blackDraw.line((x+i*3, y,x+i*3, y+cell_height), fill='white', width=1)
 
         blackDraw.rectangle((x,y,x+cell_width,y+cell_height),width=1)
         startDay=startDay + datetime.timedelta(days=1)
@@ -130,13 +131,7 @@ def drawPreview(blackDraw,redDraw,currenty,margin):
 
 
 def generate():
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
-    """
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
     if os.path.exists('../token.json'):
         creds = Credentials.from_authorized_user_file('../token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
