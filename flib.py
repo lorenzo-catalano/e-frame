@@ -48,19 +48,25 @@ def getEventStartEndFormatted(x):
         return 'error'
 
 
-def drawPreview(blackDraw,redDraw,margin):
-    image_width = 200
-    image_height = 200
+def drawPreview(blackDraw,redDraw,currenty,margin):
+    font_size = 20
+    image_height = font_size*10
+    image_width = image_height
     posx=width/2 -image_height/2
     posy=height - image_height - margin
     # Set the dimensions of the image
+
+     # Calculate the cell dimensions
+    cell_width = image_width // 7
+    cell_height = cell_width
+    image_width = cell_width*7
+    image_height = image_width
     
 
     blackDraw.rounded_rectangle((posx,posy, posx+image_width,posy+image_height), radius=5, fill=None, outline=None, width=1)
 
-
     # Set the font properties
-    font_size = 20
+    
     font = ImageFont.truetype('./fonts/Roboto-Regular.ttf', font_size)
     fontBold = ImageFont.truetype('./fonts/Roboto-Bold.ttf', font_size)
 
@@ -70,9 +76,9 @@ def drawPreview(blackDraw,redDraw,margin):
     # Get the day of the week for the first day of the month
     first_day_weekday = datetime.date.today().replace(day=1).weekday()
 
-    # Calculate the cell dimensions
-    cell_width = image_width // 7
-    cell_height = cell_width
+    
+
+   
 
     # Calculate the starting position for drawing the calendar
     start_x = posx
@@ -81,22 +87,46 @@ def drawPreview(blackDraw,redDraw,margin):
     # Draw the calendar string
 
     # Draw the calendar cells
-    today = datetime.date.today().day
+    today = datetime.date.today()
     for day in range(0, 7):
         x = start_x + cell_width * day
         _, _, bw, bh = blackDraw.textbbox((0,0), days[day],font=fontBold)
-        blackDraw.text((x+cell_width/2-bw/2, posy+cell_height/2-bh/2), days[day], fill='black', font=fontBold)
-    for day in range(1, num_days + 1):
+        blackDraw.text((x+cell_width/2-bw/2, posy+cell_height/2-bh/2-1), days[day], fill='black', font=fontBold)
+
+    startDay = datetime.date.today().replace(day=1) - datetime.timedelta(days=first_day_weekday)
+    currentmonth = datetime.date.today().month
+    for count in range(1, 43):
+        day=startDay.day
         # Calculate the cell position
-        x = start_x + cell_width * ((first_day_weekday + day - 1) % 7)
-        y = start_y + cell_height * ((first_day_weekday + day - 1) // 7)
+        x = start_x + cell_width * ((count-1) % 7)
+        y = start_y + cell_height * ((count-1) // 7)
         # Draw the day number
         _, _, bw, bh = blackDraw.textbbox((0,0), str(day),font=font)
-        if(today==day):
-            redDraw.ellipse((x, y,x+cell_width, y+cell_height), fill=0, width=1)
-            redDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2), str(day), fill='white', font=fontBold)
+        
+        if(today==startDay):
+            redDraw.rectangle((x+1, y+1,x+cell_width-1, y+cell_height-1),width=1, fill=0)
+            redDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='white', font=fontBold)
+            
         else:
-            blackDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2), str(day), fill='black', font=font)
+            blackDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='black', font=fontBold)
+        if(currentmonth != startDay.month):
+            for i in range(0,cell_width//3):
+                blackDraw.line((x+1, y+i*3,x+cell_width-1, y+i*3), fill='white', width=1)
+
+        blackDraw.rectangle((x,y,x+cell_width,y+cell_height),width=1)
+        startDay=startDay + datetime.timedelta(days=1)
+
+    #for day in range(1, num_days + 1):
+    #    # Calculate the cell position
+    #    x = start_x + cell_width * ((first_day_weekday + day - 1) % 7)
+    #    y = start_y + cell_height * ((first_day_weekday + day - 1) // 7)
+    #    # Draw the day number
+    #    _, _, bw, bh = blackDraw.textbbox((0,0), str(day),font=font)
+    #    if(today==day):
+    #        redDraw.ellipse((x, y,x+cell_width, y+cell_height), fill=0, width=1)
+    #        redDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2), str(day), fill='white', font=fontBold)
+    #    else:
+    #        blackDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2), str(day), fill='black', font=font)
 
 
 def generate():
@@ -134,10 +164,10 @@ def generate():
         blackDraw = ImageDraw.Draw(black)
         redDraw = ImageDraw.Draw(red)
         titlesize=40
-        dayfont = ImageFont.truetype("./fonts/Roboto-Regular.ttf", size=titlesize)
-        mex = daysFull[today.weekday()] + " "+ today.strftime("%d-%m-%Y")
-        _, _, w, h = blackDraw.textbbox((0, 0), mex , font=dayfont)
-        blackDraw.text(((width-w)/2, 10), mex, font=dayfont, fill=0)
+        titleFont = ImageFont.truetype("./fonts/Quattrocento-Bold.ttf", size=titlesize)
+        mex = daysFull[today.weekday()] + " "+ today.strftime("%d-%m-%y")
+        _, _, w, h = blackDraw.textbbox((0, 0), mex , font=titleFont)
+        blackDraw.text(((width-w)/2, 10), mex, font=titleFont, fill=0)
 
         upMargin=10*2 + h
         margin=2
@@ -147,6 +177,7 @@ def generate():
         headfont = ImageFont.truetype("./fonts/Roboto-Regular.ttf", size=20)
         
         for c in filter(lambda cal: cal['id'].startswith("family"), calendars['items']):
+        #for c in calendars['items']:
             events_result = service.events().list(calendarId=c['id'],timeMin=now,maxResults=10, singleEvents=True,orderBy='startTime').execute()
             allevents = allevents + events_result.get('items', [])
 
@@ -185,16 +216,20 @@ def generate():
             if(day!=ed):
                 day=ed
                 #on red
-                redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
                 _, _, bw, bh = redDraw.textbbox((0,0), ed[8:10],font = font)
-                redDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2), ed[8:10] , fill=0,font = font)
+                if(day==today.strftime("%Y-%m-%d")):
+                    redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=0, width=1)
+                    redDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2), ed[8:10] , fill='white',font = font)
+                else:
+                    redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
+                    blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2), ed[8:10] , fill=0,font = font)
             blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
             blackDraw.text((leftmarginbox + hmargin, currenty + margin), event.get('summary')+" "+getEventStartEndFormatted(event), fill=0,font = font)
             
             currenty = currenty+margin+boxh
 
 
-        drawPreview(blackDraw,redDraw,margin)
+        drawPreview(blackDraw,redDraw,currenty,margin)
 
         return (black,red)
 

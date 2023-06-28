@@ -6,12 +6,12 @@ libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__)
 if os.path.exists(libdir):
     sys.path.append(libdir)
 from waveshare_epd import epd7in5b_V2
-import eframe
+import flib
 
 epd = epd7in5b_V2.EPD()
 
 def main():
-    (black,red) = eframe.generate()
+    (black,red) = flib.generate()
     epd.init()
     epd.Clear()
     epd.display(epd.getbuffer(black), epd.getbuffer(red))
