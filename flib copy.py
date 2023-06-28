@@ -22,7 +22,7 @@ boxh=68
 
 days=['L','M','M','G','V','S','D']
 daysFull=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica']
-months=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
+
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -49,43 +49,49 @@ def getEventStartEndFormatted(x):
 
 
 def drawPreview(blackDraw,redDraw,currenty,margin):
-
-    titlesize=40
-    titleFont = ImageFont.truetype("./fonts/Quattrocento-Bold.ttf", size=titlesize)
-    mex = months[today.month -1] +" "+ str(today.year)
-    _, _, tw, th = blackDraw.textbbox((0, 0), mex , font=titleFont)
-    redDraw.text(((width-tw)/2, 10), mex, font=titleFont, fill=0)
-
     font_size = 20
     image_height = font_size*10
     image_width = image_height
-    
+    posx=width/2 -image_height/2
+    posy=height - image_height - margin
     # Set the dimensions of the image
 
      # Calculate the cell dimensions
-    cell_width = 60
-    cell_height = 40
+    cell_width = image_width // 7
+    cell_height = cell_width
     image_width = cell_width*7
-    image_height = (height / 2) - margin
+    image_height = image_width
+    
 
-    posx=(width-image_width) / 2
-    posy=margin*2+th
-
+    blackDraw.rounded_rectangle((posx,posy, posx+image_width,posy+image_height), radius=5, fill=None, outline=None, width=1)
 
     # Set the font properties
     
     font = ImageFont.truetype('./fonts/Roboto-Regular.ttf', font_size)
     fontBold = ImageFont.truetype('./fonts/Roboto-Bold.ttf', font_size)
 
-    num_days = calendar.monthrange(today.year, today.month)[1]
-    first_day_weekday = today.replace(day=1).weekday()
+    # Get the number of days in the current month
+    num_days = calendar.monthrange(datetime.date.today().year, datetime.date.today().month)[1]
+
+    # Get the day of the week for the first day of the month
+    first_day_weekday = datetime.date.today().replace(day=1).weekday()
+
+    
+
+   
+
+    # Calculate the starting position for drawing the calendar
     start_x = posx
     start_y = posy + font_size + 5
-    
+
+    # Draw the calendar string
+
+    # Draw the calendar cells
+    today = datetime.date.today()
     for day in range(0, 7):
         x = start_x + cell_width * day
         _, _, bw, bh = blackDraw.textbbox((0,0), days[day],font=fontBold)
-        blackDraw.text((x+cell_width/2-bw/2, posy), days[day], fill='black', font=fontBold)
+        blackDraw.text((x+cell_width/2-bw/2, posy+cell_height/2-bh/2-1), days[day], fill='black', font=fontBold)
 
     startDay = datetime.date.today().replace(day=1) - datetime.timedelta(days=first_day_weekday)
     currentmonth = datetime.date.today().month
@@ -152,9 +158,17 @@ def generate():
         red = Image.new("1", (width,height), color=255)
         blackDraw = ImageDraw.Draw(black)
         redDraw = ImageDraw.Draw(red)
+        titlesize=40
+        titleFont = ImageFont.truetype("./fonts/Quattrocento-Bold.ttf", size=titlesize)
+        mex = daysFull[today.weekday()] + " "+ today.strftime("%d-%m-%y")
+        _, _, w, h = blackDraw.textbbox((0, 0), mex , font=titleFont)
+        blackDraw.text(((width-w)/2, 10), mex, font=titleFont, fill=0)
+
+        upMargin=10*2 + h
         margin=2
         c = 0
         
+        months=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
         headfont = ImageFont.truetype("./fonts/Roboto-Regular.ttf", size=20)
         
         for c in filter(lambda cal: cal['id'].startswith("family"), calendars['items']):
@@ -171,7 +185,7 @@ def generate():
         
         day = ""
         month = ""
-        currenty=350
+        currenty=titlesize + 20
 
         baseFontSize=20
         font = ImageFont.truetype("./fonts/Roboto-Medium.ttf", size=baseFontSize)
