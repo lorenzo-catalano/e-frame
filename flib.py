@@ -120,7 +120,7 @@ def preview(blackDraw,redDraw,currenty,margin,allevents):
         else:
             blackDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='black', font=fontBold)
             for n in range(0,eventsInDay):
-                redDraw.ellipse((x+cell_width-10,5*n+y+5+5*n,x+cell_width-5,5*n+y+5+5*(n+1)),fill=1)
+                redDraw.ellipse((x+5,y+cell_height-10, x+5*n, y+cell_height-5),fill=1)
         if(currentmonth != startDay.month):
             for i in range(0,cell_width//3):
                 blackDraw.line((x+1, y+i*3,x+cell_width-1, y+i*3), fill='white', width=1)
