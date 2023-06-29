@@ -9,14 +9,13 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from PIL import Image, ImageDraw, ImageFont
-from datetime import date
+from datetime import date,timezone,timedelta
 import calendar
 import itertools
 
 today = date.today()
 width=480
 height=800
-
 boxw=68
 boxh=68
 
@@ -24,12 +23,26 @@ days=['L','M','M','G','V','S','D']
 daysFull=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica']
 months=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
 
+
+
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 def getEventStartEnd(x):
-    return (x.get('start').get('date',x.get('start').get('dateTime')),x.get('end').get('date',x.get('end').get('dateTime')))
+    start=x.get('start')
+    end=x.get('end')
+    try:
+        s=datetime.datetime.strptime(start.get('date',start.get('dateTime')),'%Y-%m-%dT%H:%M:%S%z').astimezone()
+        e=datetime.datetime.strptime(end.get('date',end.get('dateTime')),'%Y-%m-%dT%H:%M:%S%z').astimezone()
+    except ValueError:
+        s=datetime.datetime.strptime(start.get('date',start.get('dateTime')),'%Y-%m-%d').astimezone()
+        e=datetime.datetime.strptime(end.get('date',end.get('dateTime')),'%Y-%m-%d').astimezone()
+    
+    return (s,e)
+
 def getEventDay(x):
+    return(x.get('start').get('date',x.get('start').get('dateTime')))[0:10]
+def getEventDayFull(x):
     return(x.get('start').get('date',x.get('start').get('dateTime')))[0:10]
 def getEventMonth(x):
     return(x.get('start').get('date',x.get('start').get('dateTime')))[6:8]
@@ -38,17 +51,17 @@ def getEventMonth(x):
 def getEventStartEndFormatted(x):
     try:
         startend = getEventStartEnd(x)
-        start = startend[0][11:16]
-        end = startend[1][11:16]
-        if(start == ""):
+        start = startend[0].strftime("%H:%M")
+        end = startend[1].strftime("%H:%M")
+        if(start == "00:00" and end == "00:00"):
             return "(promemoria)"
         else:
             return start + ' - ' + end
-    except:
+    except Exception as e: 
         return 'error'
 
 
-def drawPreview(blackDraw,redDraw,currenty,margin):
+def preview(blackDraw,redDraw,currenty,margin,allevents):
 
     titlesize=40
     titleFont = ImageFont.truetype("./fonts/Quattrocento-Bold.ttf", size=titlesize)
@@ -91,6 +104,7 @@ def drawPreview(blackDraw,redDraw,currenty,margin):
     currentmonth = datetime.date.today().month
     for count in range(1, 43):
         day=startDay.day
+        eventsInDay = len(list(filter(lambda e: getEventDay(e)== startDay.strftime("%Y-%m-%d") ,allevents)))
         # Calculate the cell position
         x = start_x + cell_width * ((count-1) % 7)
         y = start_y + cell_height * ((count-1) // 7)
@@ -100,14 +114,19 @@ def drawPreview(blackDraw,redDraw,currenty,margin):
         if(today==startDay):
             redDraw.rectangle((x+1, y+1,x+cell_width-1, y+cell_height-1),width=1, fill=0)
             redDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='white', font=fontBold)
-            
+            for n in range(0,eventsInDay):
+                blackDraw.ellipse((x+cell_width-10,5*n+y+5+5*n,x+cell_width-5,5*n+y+5+5*(n+1)),fill=1)
+                redDraw.ellipse((x+cell_width-10,5*n+y+5+5*n,x+cell_width-5,5*n+y+5+5*(n+1)),fill='white')
         else:
             blackDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='black', font=fontBold)
+            for n in range(0,eventsInDay):
+                redDraw.ellipse((x+cell_width-10,5*n+y+5+5*n,x+cell_width-5,5*n+y+5+5*(n+1)),fill=1)
         if(currentmonth != startDay.month):
             for i in range(0,cell_width//3):
                 blackDraw.line((x+1, y+i*3,x+cell_width-1, y+i*3), fill='white', width=1)
                 blackDraw.line((x+i*3, y,x+i*3, y+cell_height), fill='white', width=1)
 
+        
         blackDraw.rectangle((x,y,x+cell_width,y+cell_height),width=1)
         startDay=startDay + datetime.timedelta(days=1)
 
@@ -125,6 +144,7 @@ def drawPreview(blackDraw,redDraw,currenty,margin):
 
 
 def generate():
+
     creds = None
     if os.path.exists('../token.json'):
         creds = Credentials.from_authorized_user_file('../token.json', SCOPES)
@@ -139,6 +159,8 @@ def generate():
         with open('../token.json', 'w') as token:
             token.write(creds.to_json())
 
+
+    
     try:
         service = build('calendar', 'v3', credentials=creds)
 
@@ -152,7 +174,11 @@ def generate():
         red = Image.new("1", (width,height), color=255)
         blackDraw = ImageDraw.Draw(black)
         redDraw = ImageDraw.Draw(red)
+        
         margin=2
+        
+        
+        
         c = 0
         
         headfont = ImageFont.truetype("./fonts/Roboto-Regular.ttf", size=20)
@@ -164,6 +190,8 @@ def generate():
 
         allevents = sorted(allevents,key = lambda x : (x.get('start').get('date',x.get('start').get('dateTime')))[0:10])[0:15]
         
+        preview(blackDraw,redDraw,0,margin,allevents)
+
         hmargin = 10
         margin = 5
         margin10 = 10
@@ -204,13 +232,13 @@ def generate():
                 else:
                     redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
                     blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill=0,font = font)
-            blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
+            #blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
             blackDraw.text((leftmarginbox + hmargin, currenty + margin), event.get('summary')+" "+getEventStartEndFormatted(event), fill=0,font = font)
             
             currenty = currenty+margin+boxh
 
-
-        drawPreview(blackDraw,redDraw,currenty,margin)
+        
+        
 
         return (black,red)
 
