@@ -67,9 +67,9 @@ def getEventStartEndFormatted(x):
 def preview(blackDraw,redDraw,currenty,margin,allevents):
 
     titlesize=40
-    titleFont = ImageFont.truetype("./fonts/Gidole-Regular.ttf", size=titlesize)
+    titleFont = ImageFont.truetype("./fonts/Quattrocento-Bold.ttf", size=titlesize)
     mex = months[today.month -1] +" "+ str(today.year)
-    _, _, tw, th = redDraw.textbbox((0, 0), mex , font=titleFont)
+    _, _, tw, th = blackDraw.textbbox((0, 0), mex , font=titleFont)
     redDraw.text(((width-tw)/2, 10), mex, font=titleFont, fill=0)
 
     font_size = 20
@@ -85,7 +85,7 @@ def preview(blackDraw,redDraw,currenty,margin,allevents):
     image_height = (height / 2) - margin
 
     posx=(width-image_width) / 2
-    posy=margin*2+th+5
+    posy=margin*2+th
 
 
     # Set the font properties
@@ -129,7 +129,7 @@ def preview(blackDraw,redDraw,currenty,margin,allevents):
                 blackDraw.line((x+i*3, y,x+i*3, y+cell_height), fill='white', width=1)
 
         
-        blackDraw.rounded_rectangle((x,y,x+cell_width,y+cell_height),radius=10,width=1)
+        blackDraw.rectangle((x,y,x+cell_width,y+cell_height),width=1)
         startDay=startDay + datetime.timedelta(days=1)
 
 def getEvents():
@@ -150,7 +150,6 @@ def getEvents():
         service = build('calendar', 'v3', credentials=creds)
         now = (datetime.datetime.utcnow()).isoformat() + 'Z'
         print('Getting calendars')
-        allevents = []
         calendars = service.calendarList().list().execute()
         for c in filter(lambda cal: cal['id'].startswith("family"), calendars['items']):
         #for c in calendars['items']:
@@ -174,7 +173,7 @@ def generate():
     c = 0
     headfont = ImageFont.truetype("./fonts/Roboto-Regular.ttf", size=20)
     
-    allevents = getEvents()
+    allevents = []#getEvents()
     
     preview(blackDraw,redDraw,0,margin,allevents)
 
@@ -239,53 +238,36 @@ def sendImagePixels(image,color):
         if item != 255 :
             paramsCount=paramsCount+1
             params=params+color+":"+str(x)+":"+str(y)+";"
-            if(paramsCount==75):
-                print('calling',len(params))
-                r = requests.post("http://192.168.1.204/",data=params)
+            if(paramsCount==50):
+                print('calling')
+                r = requests.get("http://192.168.1.204/?c="+params+"-c")
                 print('done',r)
                 paramsCount=0
                 params=""
     if params:
         print('calling',color)
-        r = requests.post("http://192.168.1.204/",data=params)
+        r = requests.get("http://192.168.1.204/?c="+params+"-c")
         print('done',r)
 
 
-def send(black,red):
+def merge(black,red):
+    red = red.rotate(-90,expand=1)
     red.save("red.png")
+
+    black = black.rotate(-90,expand=1)
     black.save("black.png")
 
-    red = red.rotate(-90,expand=1)
-    black = black.rotate(-90,expand=1)
+    requests.get("http://192.168.1.204/?c=c-c")
+    time.sleep(5)
 
-    #requests.post("http://192.168.1.204/",data="AAAAAAAAAAAAAAAAAAAAAAAAA")
-    #time.sleep(5)
-
-    #sendImagePixels(black,'b')
-    #sendImagePixels(red,'r')
-    #time.sleep(5)
-    #requests.post("http://192.168.1.204/",data="d")
-def merge(black,red):
-    
-    merged = black.convert(mode='RGBA')
-    print(merged)
-    datas = red.getdata()
-    
-    x=-1
-    y=0
-    paramsCount=0
-    params=""
-    
-    for item in datas:
-        x=x+1
-        if(x==480):
-            x=0
-            y=y+1
-        if item != 255 :
-            merged.putpixel((x,y),(255,0,0,255))
-
-    merged.save('merged.png')
+    sendImagePixels(black,'b')
+    sendImagePixels(red,'r')
+    time.sleep(5)
+    requests.get("http://192.168.1.204/?c=d-c")
 
 def getMergedImages():
     (black,red) = generate()
     merge(black,red)
+
+    
+    
