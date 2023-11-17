@@ -115,7 +115,7 @@ def preview(blackDraw,redDraw,currenty,margin,allevents):
         _, _, bw, bh = blackDraw.textbbox((0,0), str(day),font=font)
         
         if(today==startDay):
-            redDraw.rectangle((x+1, y+1,x+cell_width-1, y+cell_height-1),width=1, fill=0)
+            redDraw.rounded_rectangle((x+1, y+1,x+cell_width-1, y+cell_height-1),radius=10,width=1, fill=0)
             redDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='white', font=fontBold)
             for n in range(0,eventsInDay):
                 redDraw.ellipse((5*n+x+5+(n)*5,y+cell_height-10,5*n+ x+5+(n+1)*5, y+cell_height-5),fill='white')
