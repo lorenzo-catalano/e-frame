@@ -16,8 +16,6 @@ import io
 import requests
 import time
 
-url = "http://192.168.1.204/"
-
 today = date.today()
 width=480
 height=800
@@ -117,7 +115,7 @@ def preview(blackDraw,redDraw,currenty,margin,allevents):
         _, _, bw, bh = blackDraw.textbbox((0,0), str(day),font=font)
         
         if(today==startDay):
-            redDraw.rounded_rectangle((x, y,x+cell_width, y+cell_height),radius=10,width=1, fill=0)
+            redDraw.rounded_rectangle((x+1, y+1,x+cell_width-1, y+cell_height-1),radius=10,width=1, fill=0)
             redDraw.text((x+cell_width/2-bw/2, y+cell_height/2-bh/2-1), str(day), fill='white', font=fontBold)
             for n in range(0,eventsInDay):
                 redDraw.ellipse((5*n+x+5+(n)*5,y+cell_height-10,5*n+ x+5+(n+1)*5, y+cell_height-5),fill='white')
@@ -155,8 +153,10 @@ def getEvents():
         allevents = []
         calendars = service.calendarList().list().execute()
         for c in filter(lambda cal: cal['id'].startswith("family"), calendars['items']):
+        #for c in calendars['items']:
             events_result = service.events().list(calendarId=c['id'],timeMin=now,maxResults=10, singleEvents=True,orderBy='startTime').execute()
             allevents = allevents + events_result.get('items', [])
+
         allevents = sorted(allevents,key = lambda x : (x.get('start').get('date',x.get('start').get('dateTime')))[0:10])[0:15]
         return allevents
     except HttpError as error:
@@ -185,7 +185,7 @@ def generate():
     
     day = ""
     month = ""
-    currenty=320
+    currenty=350
 
     baseFontSize=20
     font = ImageFont.truetype("./fonts/Roboto-Medium.ttf", size=baseFontSize)
@@ -239,18 +239,18 @@ def sendImagePixels(image,color):
         if item != 255 :
             paramsCount=paramsCount+1
             params=params+color+":"+str(x)+":"+str(y)+";"
-            if(paramsCount==80):
-                print('calling',color,y,x)
+            if(paramsCount==200):
+                print('calling',color,y,"/480")
                 try :
-                    r = requests.post(url,data=params)
+                    r = requests.post("http://192.168.1.204/",data=params)
                 except:
                     print('err')
                 paramsCount=0
                 params=""
     if params:
-        print('calling',color,y,x)
+        print('calling',color,y,"/480")
         try :
-            r = requests.post(url,data=params)
+            r = requests.post("http://192.168.1.204/",data=params)
         except:
             print('err')
 
@@ -262,12 +262,12 @@ def send(black,red):
     red = red.rotate(-90,expand=1)
     black = black.rotate(-90,expand=1)
 
-    requests.post(url,data="c")
+    requests.post("http://192.168.1.204/",data="c")
 
     sendImagePixels(black,'b')
     sendImagePixels(red,'r')
     time.sleep(5)
-    requests.post(url,data="d")
+    requests.post("http://192.168.1.204/",data="d")
 def merge(black,red):
     
     merged = black.convert(mode='RGBA')
@@ -290,6 +290,5 @@ def merge(black,red):
 
 def getMergedImages():
     (black,red) = generate()
-    merge(black,red)
     send(black,red)
-    
+    merge(black,red)
