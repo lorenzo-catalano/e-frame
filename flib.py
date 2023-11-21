@@ -15,6 +15,7 @@ import itertools
 import io
 import requests
 import time
+import socket
 
 url = "http://192.168.1.204/"
 
@@ -231,29 +232,35 @@ def sendImagePixels(image,color):
     y=0
     paramsCount=0
     params=""
-    for item in datas:
-        x=x+1
-        if(x==800):
-            x=0
-            y=y+1
-        if item != 255 :
-            paramsCount=paramsCount+1
-            params=params+color+":"+str(x)+":"+str(y)+";"
-            if(paramsCount==80):
-                print('calling',color,y,x)
-                try :
-                    r = requests.post(url,data=params)
-                except:
-                    print('err')
-                paramsCount=0
-                params=""
-    if params:
-        print('calling',color,y,x)
-        try :
-            r = requests.post(url,data=params)
-        except:
-            print('err')
-
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        print('connecting')
+        s.connect(('192.168.1.204', 80))
+        print('connected')
+        #data = s.recv(1024)
+        #print(s)
+        for item in datas:
+            x=x+1
+            if(x==800):
+                x=0
+                y=y+1
+            if item != 255 :
+                paramsCount=paramsCount+1
+                params=params+color+":"+str(x)+":"+str(y)+";"
+                if(paramsCount==10):
+                    print('calling',color,y,x)
+                    try :
+                        s.sendall(str.encode(params))
+                    except:
+                        print('err')
+                    paramsCount=0
+                    params=""
+        if params:
+            print('calling',color,y,x)
+            try :
+                s.sendall(str.encode(params))
+            except Exception as e:
+                print('err',e)
+        s.close()
 
 def send(black,red):
     red.save("red.png")
@@ -262,12 +269,20 @@ def send(black,red):
     red = red.rotate(-90,expand=1)
     black = black.rotate(-90,expand=1)
 
-    requests.post(url,data="c")
+    sendCommand('c')
 
     sendImagePixels(black,'b')
     sendImagePixels(red,'r')
     time.sleep(5)
-    requests.post(url,data="d")
+    #requests.post(url,data="d")
+    sendCommand('d')
+
+def sendCommand(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        print('connecting')
+        s.connect(('192.168.1.204', 80))
+        s.send(str.encode(message))
+        s.close()
 def merge(black,red):
     
     merged = black.convert(mode='RGBA')
@@ -290,6 +305,7 @@ def merge(black,red):
 
 def getMergedImages():
     (black,red) = generate()
-    merge(black,red)
-    send(black,red)
+    return (black,red)
+    #merge(black,red)
+    #send(black,red)
     
