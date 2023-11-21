@@ -17,25 +17,21 @@ def sendImagePixels(socket,image,color):
             paramsCount=paramsCount+1
             params=params+color+":"+str(x)+":"+str(y)+";"
             if(paramsCount==10):
-                try :
-                    socket.sendall(str.encode(params))
-                except Exception as e:
-                    print('err',e)
+                socket.sendall(str.encode(params))
                 paramsCount=0
                 params=""
                 if y == 2:
                     return
     if params:
-        try :
-            socket.sendall(str.encode(params))
-        except Exception as e:
-            print('err',e)
+        socket.sendall(str.encode(params))
 
 def sendCommand(s,message):
     s.send(str.encode(message))
 
 if __name__ == '__main__':
-    
+    (black,red) = flib.getMergedImages()
+    black.save('black.png')
+    red.save('red.png')
 
     import socket
 
@@ -46,20 +42,22 @@ if __name__ == '__main__':
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, PORT))
         s.listen()
-        print('listening')
         while True:
+            print('listening')
             conn, addr = s.accept()
             with conn:
-                (black,red) = flib.getMergedImages()
-                print(f"Connected by {addr}")
-                data = conn.recv(1024)
-                print("clearing")
-                sendCommand(conn,'c;')
-                print("black")
-                sendImagePixels(conn,black.rotate(-90,expand=1),'b')
-                print("red")
-                sendImagePixels(conn,red.rotate(-90,expand=1),'r')
-                print("display")
-                sendCommand(conn,'d;')
-                conn.close()
+                try:
+                    (black,red) = flib.getMergedImages()
+                    print(f"Connected by {addr}")
+                    data = conn.recv(1024)
+                    print("clearing")
+                    sendCommand(conn,'c;')
+                    print("black")
+                    sendImagePixels(conn,black.rotate(-90,expand=1),'b')
+                    print("red")
+                    sendImagePixels(conn,red.rotate(-90,expand=1),'r')
+                    print("display")
+                    sendCommand(conn,'d;')
+                except:
+                    conn.close()
 

@@ -156,6 +156,7 @@ def getEvents():
         allevents = []
         calendars = service.calendarList().list().execute()
         for c in filter(lambda cal: cal['id'].startswith("family"), calendars['items']):
+        #for c in calendars['items']:
             events_result = service.events().list(calendarId=c['id'],timeMin=now,maxResults=10, singleEvents=True,orderBy='startTime').execute()
             allevents = allevents + events_result.get('items', [])
         allevents = sorted(allevents,key = lambda x : (x.get('start').get('date',x.get('start').get('dateTime')))[0:10])[0:15]
