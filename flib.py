@@ -9,11 +9,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from PIL import Image, ImageDraw, ImageFont
-from datetime import date,timezone,timedelta
+from datetime import date
 import calendar
-import itertools
-import io
-import requests
 import time
 import socket
 
@@ -70,7 +67,7 @@ def getEventStartEndFormatted(x):
 def preview(blackDraw,redDraw,currenty,margin,allevents):
 
     titlesize=40
-    titleFont = ImageFont.truetype("./fonts/Gidole-Regular.ttf", size=titlesize)
+    titleFont = ImageFont.truetype("./fonts/Roboto-MediumItalic.ttf", size=titlesize)
     mex = months[today.month -1] +" "+ str(today.year)
     _, _, tw, th = redDraw.textbbox((0, 0), mex , font=titleFont)
     redDraw.text(((width-tw)/2, 10), mex, font=titleFont, fill=0)
@@ -93,8 +90,8 @@ def preview(blackDraw,redDraw,currenty,margin,allevents):
 
     # Set the font properties
     
-    font = ImageFont.truetype('./fonts/Roboto-Regular.ttf', font_size)
-    fontBold = ImageFont.truetype('./fonts/Roboto-Bold.ttf', font_size)
+    font = ImageFont.truetype('./fonts/Roboto-Light.ttf', font_size)
+    fontBold = ImageFont.truetype('./fonts/Roboto-BoldItalic.ttf', font_size)
 
     num_days = calendar.monthrange(today.year, today.month)[1]
     first_day_weekday = today.replace(day=1).weekday()
@@ -174,7 +171,8 @@ def generate():
     
     margin=2
     c = 0
-    headfont = ImageFont.truetype("./fonts/Roboto-Regular.ttf", size=20)
+    baseFontSize=20
+    font = ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=baseFontSize)
     
     allevents = getEvents()
     
@@ -182,15 +180,9 @@ def generate():
 
     hmargin = 10
     margin = 5
-    margin10 = 10
-    boxw = width-hmargin
-    
     day = ""
     month = ""
     currenty=320
-
-    baseFontSize=20
-    font = ImageFont.truetype("./fonts/Roboto-Medium.ttf", size=baseFontSize)
     
     boxh = baseFontSize+margin*2
 
@@ -225,7 +217,16 @@ def generate():
         
         currenty = currenty+margin+boxh
 
+    draw_text_90_into("Aggiornato il "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=12),black,(480,800))
     return (black,red)
+
+def draw_text_90_into (text: str,font, into, at):
+    wi, hi = font.getsize(text)
+    img = Image.new("1", (wi,hi), color=255)
+    d = ImageDraw.Draw(img)
+    d.text((0, 0), text, font = font, fill = 'black')
+    img = img.rotate (90, expand = 1)
+    into.paste (img, (at[0]-hi,at[1]-wi))
 
 def sendImagePixels(image,color):
     datas = image.getdata()
@@ -284,8 +285,8 @@ def sendCommand(message):
         s.connect(('192.168.1.204', 80))
         s.send(str.encode(message))
         s.close()
+
 def merge(black,red):
-    
     merged = black.convert(mode='RGBA')
     datas = red.getdata()
     
@@ -304,7 +305,7 @@ def merge(black,red):
 
     merged.save('merged.png')
 
-def getMergedImages():
+def getImages():
     (black,red) = generate()
     return (black,red)
     #merge(black,red)

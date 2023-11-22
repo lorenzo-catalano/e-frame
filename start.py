@@ -29,9 +29,11 @@ def sendCommand(s,message):
     s.send(str.encode(message))
 
 if __name__ == '__main__':
-    (black,red) = flib.getMergedImages()
+    (black,red) = flib.getImages()
     black.save('black.png')
     red.save('red.png')
+    flib.merge(black,red)
+    exit(1)
 
     import socket
 
@@ -47,7 +49,7 @@ if __name__ == '__main__':
             conn, addr = s.accept()
             with conn:
                 try:
-                    (black,red) = flib.getMergedImages()
+                    (black,red) = flib.getImages()
                     print(f"Connected by {addr}")
                     data = conn.recv(1024)
                     print("clearing")
