@@ -172,7 +172,7 @@ def generate():
     margin=2
     c = 0
     baseFontSize=20
-    font = ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=baseFontSize)
+    font = ImageFont.truetype("./fonts/Roboto-MediumItalic.ttf", size=baseFontSize)
     
     allevents = getEvents()
     
@@ -199,7 +199,7 @@ def generate():
             m = months[int(ed[5:7])-1]
             _, _, bw, bh = blackDraw.textbbox((0,0), m,font = font)
             blackDraw.text((margin,currenty), m , fill=0,font = font)
-            redDraw.line((margin*2+bw,currenty+bh/2,width-hmargin,currenty+bh/2), fill=None, width=1, joint=None)
+            redDraw.line((margin,currenty+bh+1,width-hmargin,currenty+bh+1), fill=None, width=1, joint=None)
 
             currenty = currenty+baseFontSize+margin
         if(day!=ed):
