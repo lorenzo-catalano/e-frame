@@ -16,7 +16,7 @@ import socket
 
 url = "http://192.168.1.204/"
 
-today = date.today()
+
 width=480
 height=800
 boxw=68
@@ -64,8 +64,7 @@ def getEventStartEndFormatted(x):
         return 'error'
 
 
-def preview(blackDraw,redDraw,currenty,margin,allevents):
-
+def preview(today,blackDraw,redDraw,currenty,margin,allevents):
     titlesize=40
     titleFont = ImageFont.truetype("./fonts/Roboto-MediumItalic.ttf", size=titlesize)
     mex = months[today.month -1] +" "+ str(today.year)
@@ -163,7 +162,7 @@ def getEvents():
         return []
 
 def generate():
-    
+    today = date.today()
     black = Image.new("1", (width,height), color=255)
     red = Image.new("1", (width,height), color=255)
     blackDraw = ImageDraw.Draw(black)
@@ -176,7 +175,7 @@ def generate():
     
     allevents = getEvents()
     
-    preview(blackDraw,redDraw,0,margin,allevents)
+    preview(today,blackDraw,redDraw,0,margin,allevents)
 
     hmargin = 10
     margin = 5

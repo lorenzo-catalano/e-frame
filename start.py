@@ -30,10 +30,10 @@ def sendCommand(s,message):
 
 if __name__ == '__main__':
     (black,red) = flib.getImages()
-    #black.save('black.png')
-    #red.save('red.png')
-    #flib.merge(black,red)
-
+    black.save('black.png')
+    red.save('red.png')
+    flib.merge(black,red)
+    
     import socket
 
     HOST = "0.0.0.0"
