@@ -67,7 +67,7 @@ def getEventStartEndFormatted(x):
 def preview(today,blackDraw,redDraw,currenty,margin,allevents):
     titlesize=40
     titleFont = ImageFont.truetype("./fonts/Roboto-MediumItalic.ttf", size=titlesize)
-    mex = months[today.month -1] +" "+ str(today.year)
+    mex = str(today.day)+" "+months[today.month -1] +" "+ str(today.year)
     _, _, tw, th = redDraw.textbbox((0, 0), mex , font=titleFont)
     redDraw.text(((width-tw)/2, 10), mex, font=titleFont, fill=0)
 

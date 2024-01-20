@@ -29,10 +29,8 @@ def sendCommand(s,message):
     s.send(str.encode(message))
 
 if __name__ == '__main__':
-    (black,red) = flib.getImages()
-    black.save('black.png')
-    red.save('red.png')
-    flib.merge(black,red)
+
+    print("starting")
     
     import socket
 
