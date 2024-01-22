@@ -231,7 +231,10 @@ def generate():
     except Exception as eeee:
         print(eeee)
     print("done")
-    draw_text_90_into("Aggiornato il "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=12),black,(480,800))
+    updated="Aggiornato il "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    updatedFont=ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=14)
+    _, _, tw, th = blackDraw.textbbox((0, 0), updated , font=updatedFont)
+    blackDraw.text(((width-tw), (height-th)), updated, font=updatedFont, fill=0)
     return (black,red)
 
 def draw_text_90_into (text: str,font, into, at):
