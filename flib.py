@@ -231,7 +231,7 @@ def generate():
     except Exception as eeee:
         print(eeee)
     print("done")
-    updated="Aggiornato il "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    updated="Aggiornato il "+datetime.datetime.now().strftime("%d/%m/%Y") +" alle "+datetime.datetime.now().strftime("%H:%M:%S")
     updatedFont=ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=14)
     _, _, tw, th = blackDraw.textbbox((0, 0), updated , font=updatedFont)
     blackDraw.text(((width-tw), (height-th)), updated, font=updatedFont, fill=0)
