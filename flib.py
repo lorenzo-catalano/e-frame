@@ -48,7 +48,7 @@ def getEventDay(x):
 def getEventDayFull(x):
     return(x.get('start').get('date',x.get('start').get('dateTime')))[0:10]
 def getEventMonth(x):
-    return(x.get('start').get('date',x.get('start').get('dateTime')))[6:8]
+    return(x.get('start').get('date',x.get('start').get('dateTime')))[5:7]
 
 
 def getEventStartEndFormatted(x):
@@ -209,13 +209,15 @@ def generate():
                 month = mo
                 m = months[int(ed[5:7])-1]
                 _, _, bw, bh = blackDraw.textbbox((0,0), m,font = font)
-                blackDraw.text((margin,currenty), m , fill=0,font = font)
+                if(month == today.strftime("%m")):
+                    redDraw.text((margin,currenty), m , fill=0,font = font)
+                else:
+                    blackDraw.text((margin,currenty), m , fill=0,font = font)
                 redDraw.line((margin,currenty+bh+1,width-hmargin,currenty+bh+1), fill=None, width=1, joint=None)
 
                 currenty = currenty+baseFontSize+margin
             if(day!=ed):
                 day=ed
-                #on red
                 _, _, bw, bh = redDraw.textbbox((0,0), ed[8:10],font = font)
                 if(day==today.strftime("%Y-%m-%d")):
                     redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=0, width=1)
@@ -223,7 +225,6 @@ def generate():
                 else:
                     redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
                     blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill=0,font = font)
-            #blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
             blackDraw.text((leftmarginbox + hmargin, currenty + margin), event.get('summary')+" "+getEventStartEndFormatted(event), fill=0,font = font)
             
             currenty = currenty+margin+boxh
