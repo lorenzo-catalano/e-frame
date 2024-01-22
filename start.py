@@ -31,7 +31,6 @@ def sendCommand(s,message):
 if __name__ == '__main__':
 
     print("starting")
-    
     import socket
 
     HOST = "0.0.0.0"
@@ -57,6 +56,7 @@ if __name__ == '__main__':
                     sendImagePixels(conn,red.rotate(-90,expand=1),'r')
                     print("display")
                     sendCommand(conn,'d;')
-                except:
+                except Exception as e:
+                    print(e)
                     conn.close()
 

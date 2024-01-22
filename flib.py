@@ -61,6 +61,7 @@ def getEventStartEndFormatted(x):
         else:
             return start + ' - ' + end
     except Exception as e: 
+        print(e)
         return 'error'
 
 
@@ -167,16 +168,26 @@ def generate():
     red = Image.new("1", (width,height), color=255)
     blackDraw = ImageDraw.Draw(black)
     redDraw = ImageDraw.Draw(red)
-    
     margin=2
     c = 0
     baseFontSize=20
     font = ImageFont.truetype("./fonts/Roboto-MediumItalic.ttf", size=baseFontSize)
     
-    allevents = getEvents()
     
-    preview(today,blackDraw,redDraw,0,margin,allevents)
-
+    try:
+        allevents = getEvents()
+        preview(today,blackDraw,redDraw,0,margin,allevents)
+    except Exception as e:
+        print(e)
+        allevents = [
+            {
+                'kind': 'calendar#event',
+                'summary': str(e), 
+                'organizer': {'email': 'family09694292671709830714@group.calendar.google.com', 'displayName': 'Famiglia', 'self': True}, 
+                'start': {'dateTime': today.strftime("%Y-%m-%dT%H:%M:%SZ"), 'timeZone': 'Europe/Rome'}, 'end': {'dateTime': today.strftime("%Y-%m-%dT%H:%M:%SZ"), 'timeZone': 'Europe/Rome'}
+            }
+        ]
+        preview(today,blackDraw,redDraw,0,margin,allevents)
     hmargin = 10
     margin = 5
     day = ""
@@ -189,33 +200,36 @@ def generate():
     circleDiameter=baseFontSize+margin*2
     leftmarginbox = circleDiameter+margin*3
 
-    for event in allevents:
-        mo = getEventMonth(event)
-        ed = getEventDay(event)
-        if(mo!=month):
-            currenty = currenty+margin
-            month = mo
-            m = months[int(ed[5:7])-1]
-            _, _, bw, bh = blackDraw.textbbox((0,0), m,font = font)
-            blackDraw.text((margin,currenty), m , fill=0,font = font)
-            redDraw.line((margin,currenty+bh+1,width-hmargin,currenty+bh+1), fill=None, width=1, joint=None)
+    try:
+        for event in allevents:
+            mo = getEventMonth(event)
+            ed = getEventDay(event)
+            if(mo!=month):
+                currenty = currenty+margin
+                month = mo
+                m = months[int(ed[5:7])-1]
+                _, _, bw, bh = blackDraw.textbbox((0,0), m,font = font)
+                blackDraw.text((margin,currenty), m , fill=0,font = font)
+                redDraw.line((margin,currenty+bh+1,width-hmargin,currenty+bh+1), fill=None, width=1, joint=None)
 
-            currenty = currenty+baseFontSize+margin
-        if(day!=ed):
-            day=ed
-            #on red
-            _, _, bw, bh = redDraw.textbbox((0,0), ed[8:10],font = font)
-            if(day==today.strftime("%Y-%m-%d")):
-                redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=0, width=1)
-                redDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill='white',font = font)
-            else:
-                redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
-                blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill=0,font = font)
-        #blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
-        blackDraw.text((leftmarginbox + hmargin, currenty + margin), event.get('summary')+" "+getEventStartEndFormatted(event), fill=0,font = font)
-        
-        currenty = currenty+margin+boxh
-
+                currenty = currenty+baseFontSize+margin
+            if(day!=ed):
+                day=ed
+                #on red
+                _, _, bw, bh = redDraw.textbbox((0,0), ed[8:10],font = font)
+                if(day==today.strftime("%Y-%m-%d")):
+                    redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=0, width=1)
+                    redDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill='white',font = font)
+                else:
+                    redDraw.ellipse((circleMargin,currenty,circleMargin+circleDiameter,currenty+circleDiameter), fill=None, width=1)
+                    blackDraw.text((circleMargin + circleDiameter/2- bw/2,currenty + circleDiameter/2 - bh/2 -1), ed[8:10] , fill=0,font = font)
+            #blackDraw.rounded_rectangle((leftmarginbox,currenty, boxw,currenty +boxh), radius=5, fill=None, outline=None, width=1)
+            blackDraw.text((leftmarginbox + hmargin, currenty + margin), event.get('summary')+" "+getEventStartEndFormatted(event), fill=0,font = font)
+            
+            currenty = currenty+margin+boxh
+    except Exception as eeee:
+        print(eeee)
+    print("done")
     draw_text_90_into("Aggiornato il "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),ImageFont.truetype("./fonts/Roboto-Thin.ttf", size=12),black,(480,800))
     return (black,red)
 
